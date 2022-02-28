@@ -27,6 +27,7 @@ class EdMot(object):
         """
         nodes_1 = self.graph.neighbors(node_1)
         nodes_2 = self.graph.neighbors(node_2)
+
         return len(set(nodes_1).intersection(set(nodes_2)))
 
     def _calculate_motifs(self):
@@ -41,13 +42,35 @@ class EdMot(object):
         """
         Extracting connected components from motif graph.
         """
-        print("\nExtracting components.\n")
+        print("\nExtracting components.")
         components = [c for c in nx.connected_components(self.motif_graph)]
         components = [[len(c), c] for c in components]
         components.sort(key=lambda x: x[0], reverse=True)
         important_components = [components[comp][1] for comp
                                 in range(self.component_count if len(components)>=self.component_count else len(components))]
         self.blocks = [list(graph) for graph in important_components]
+
+        print("Found %d blocks." % len(self.blocks))
+        print("Block sizes: %s" % ', '.join(str(len(block)) for block in self.blocks))
+
+    def _extract_mods(self):
+        """
+        Extracting mods in the top-K connected components.
+        """
+        self.mods = []
+        print('\nAnalyzing mods.')
+        for block in tqdm(self.blocks):
+            temp_mods = {}
+            block = self.motif_graph.subgraph(block).copy()
+            temp_partition = community.best_partition(block)
+            for node, part in temp_partition.items():
+                if part not in temp_mods.keys():
+                    temp_mods[part] = [node,]
+                else:
+                    temp_mods[part].append(node)
+            self.mods.extend(temp_mods.values())
+        print('Found %d motifs.' % len(self.mods))
+        print('Motif sizes: %s' % ', '.join(str(len(mod)) for mod in self.mods))
 
     def _fill_blocks(self):
         """
@@ -63,6 +86,7 @@ class EdMot(object):
         """
         self._calculate_motifs()
         self._extract_components()
+        self._extract_mods()
         self._fill_blocks()
         partition = community.best_partition(self.graph)
         return partition

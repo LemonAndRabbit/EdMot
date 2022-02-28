@@ -16,7 +16,7 @@ def parameter_parser():
 
     parser.add_argument("--membership-path",
                         nargs="?",
-                        default="./output/cora_membership.json",
+                        default="./output/cora_membership2.json",
 	                help="Cluster memberhip json.")
 
     parser.add_argument("--components",
@@ -26,7 +26,7 @@ def parameter_parser():
 
     parser.add_argument("--cutoff",
                         type=int,
-                        default=50,
-	                help="Minimal overlap cutoff. Default is 50.")
+                        default=1,
+	                help="Minimal overlap cutoff. Default is 1.")
 
     return parser.parse_args()
